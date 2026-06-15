@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {

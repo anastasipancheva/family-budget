@@ -2,8 +2,11 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connStr = Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? throw new Exception("DATABASE_URL environment variable is not set");
+
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseSqlite("Data Source=budget_v2.db"));
+    opt.UseNpgsql(connStr));
 
 builder.Services.AddCors(o =>
     o.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
