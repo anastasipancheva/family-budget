@@ -41,10 +41,12 @@ function getWeekStart(date: Date): string {
   template: `
 @if (loading && !stats) {
   <div class="min-h-screen bg-bg flex items-center justify-center flex-col gap-4">
-    <div class="w-14 h-14 rounded-full bg-y flex items-center justify-center animate-pulse">
-      <span class="font-black text-black text-2xl">T</span>
+    <div class="w-16 h-16 rounded-full bg-y flex items-center justify-center animate-pulse">
+      <span class="font-black text-black text-3xl">T</span>
     </div>
+    <p class="text-t1 font-bold text-lg">Т-Расходы</p>
     <p class="text-t2 text-sm">Загрузка...</p>
+    <p class="text-t3 text-xs mt-2">Сервер просыпается, подождите ~30 сек</p>
   </div>
 } @else if (error) {
   <div class="min-h-screen bg-bg flex items-center justify-center p-6">
