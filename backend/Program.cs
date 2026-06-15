@@ -15,9 +15,9 @@ if (rawUrl.Contains("://"))
     var userParts = uri.UserInfo.Split(':', 2);
     var user = Uri.UnescapeDataString(userParts[0]);
     var pass = Uri.UnescapeDataString(userParts.Length > 1 ? userParts[1] : "");
-    var db   = uri.AbsolutePath.TrimStart('/').Split('?')[0];
-    var port = uri.Port > 0 ? uri.Port : 5432;
-    connStr = $"Host={uri.Host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+    var db      = uri.AbsolutePath.TrimStart('/').Split('?')[0];
+    var dbPort  = uri.Port > 0 ? uri.Port : 5432;
+    connStr = $"Host={uri.Host};Port={dbPort};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
 }
 else
 {
