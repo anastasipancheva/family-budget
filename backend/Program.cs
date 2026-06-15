@@ -5,13 +5,24 @@ var builder = WebApplication.CreateBuilder(args);
 var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
     ?? throw new Exception("DATABASE_URL environment variable is not set");
 
-// Normalize URL: ensure correct scheme and remove params Npgsql doesn't support
-var connStr = rawUrl
-    .Replace("ostgresql://", "postgresql://")  // Render sometimes strips the 'p'
-    .Replace("postgres://", "postgresql://")
-    .Replace("&channel_binding=require", "")
-    .Replace("?channel_binding=require&", "?")
-    .Replace("?channel_binding=require", "");
+// Convert postgresql:// URI to Npgsql key=value connection string
+string connStr;
+if (rawUrl.Contains("://"))
+{
+    // Normalize scheme so Uri can parse it
+    var normalized = System.Text.RegularExpressions.Regex.Replace(rawUrl, @"^[a-z]+://", "http://");
+    var uri = new Uri(normalized);
+    var userParts = uri.UserInfo.Split(':', 2);
+    var user = Uri.UnescapeDataString(userParts[0]);
+    var pass = Uri.UnescapeDataString(userParts.Length > 1 ? userParts[1] : "");
+    var db   = uri.AbsolutePath.TrimStart('/').Split('?')[0];
+    var port = uri.Port > 0 ? uri.Port : 5432;
+    connStr = $"Host={uri.Host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+}
+else
+{
+    connStr = rawUrl;
+}
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseNpgsql(connStr));
