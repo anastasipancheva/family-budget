@@ -15,9 +15,17 @@ if (rawUrl.Contains("://"))
     var userParts = uri.UserInfo.Split(':', 2);
     var user = Uri.UnescapeDataString(userParts[0]);
     var pass = Uri.UnescapeDataString(userParts.Length > 1 ? userParts[1] : "");
-    var db      = uri.AbsolutePath.TrimStart('/').Split('?')[0];
-    var dbPort  = uri.Port > 0 ? uri.Port : 5432;
-    connStr = $"Host={uri.Host};Port={dbPort};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+    var db   = uri.AbsolutePath.TrimStart('/').Split('?')[0];
+    // IsDefaultPort=true means no port was in URL → use 5432 (http default 80 is wrong)
+    var dbPort = uri.IsDefaultPort ? 5432 : uri.Port;
+    // Resolve host to IPv4 to avoid Render's IPv6 connectivity issues
+    var host = uri.Host;
+    try {
+        var addresses = System.Net.Dns.GetHostAddresses(host);
+        var ipv4 = Array.Find(addresses, a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+        if (ipv4 != null) host = ipv4.ToString();
+    } catch { /* fallback to hostname */ }
+    connStr = $"Host={host};Port={dbPort};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true;Timeout=30";
 }
 else
 {
