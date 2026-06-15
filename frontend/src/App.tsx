@@ -138,7 +138,7 @@ export default function App() {
       <header className="bg-bg border-b border-brd sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <TLogo />
-          <span className="font-bold text-t1 flex-shrink-0">Бюджет</span>
+          <span className="font-bold text-t1 flex-shrink-0">Т-Расходы</span>
           {showMonthNav && (
             <div className="flex items-center gap-1 ml-auto">
               <button onClick={() => stepMonth(-1)} className="w-8 h-8 flex items-center justify-center rounded-xl text-t2 hover:text-t1 hover:bg-card transition text-lg">‹</button>
