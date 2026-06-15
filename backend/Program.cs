@@ -74,6 +74,20 @@ app.MapPost("/api/transactions", async (AppDbContext db, Transaction t) =>
     return Results.Created($"/api/transactions/{t.Id}", t);
 });
 
+app.MapPut("/api/transactions/{id:int}", async (AppDbContext db, int id, Transaction incoming) =>
+{
+    var t = await db.Transactions.FindAsync(id);
+    if (t is null) return Results.NotFound();
+    t.Date = incoming.Date;
+    t.Amount = incoming.Amount;
+    t.IsIncome = incoming.IsIncome;
+    t.Category = incoming.Category;
+    t.Description = incoming.Description;
+    t.Person = incoming.Person;
+    await db.SaveChangesAsync();
+    return Results.Ok(t);
+});
+
 app.MapDelete("/api/transactions/{id:int}", async (AppDbContext db, int id) =>
 {
     var t = await db.Transactions.FindAsync(id);

@@ -42,6 +42,7 @@ export default function App() {
   const [budgets, setBudgets] = useState<CategoryBudget[]>([]);
   const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [editTx, setEditTx] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [txFilter, setTxFilter] = useState<Parameters<typeof api.getTransactions>[0]>({});
@@ -82,7 +83,13 @@ export default function App() {
   }
 
   async function handleAdd(tx: Omit<Transaction, 'id' | 'createdAt'>) {
-    await api.addTransaction(tx); await load();
+    if (editTx) {
+      await api.updateTransaction(editTx.id, tx);
+      setEditTx(null);
+    } else {
+      await api.addTransaction(tx);
+    }
+    await load();
   }
   async function handleDelete(id: number) {
     await api.deleteTransaction(id); await load();
@@ -156,7 +163,7 @@ export default function App() {
           <Dashboard stats={stats} settings={settings} month={month} onRefresh={load} />
         )}
         {tab === 'transactions' && settings && (
-          <TransactionList transactions={transactions} settings={settings} onDelete={handleDelete} onFilter={handleFilter} />
+          <TransactionList transactions={transactions} settings={settings} onDelete={handleDelete} onEdit={tx => { setEditTx(tx); setShowForm(true); }} onFilter={handleFilter} />
         )}
         {tab === 'savings' && (
           <SavingsPage accounts={savings} onRefresh={load} />
@@ -193,7 +200,8 @@ export default function App() {
       </nav>
 
       {showForm && settings && (
-        <TransactionForm settings={settings} onAdd={handleAdd} onClose={() => setShowForm(false)} />
+        <TransactionForm settings={settings} onAdd={handleAdd} initial={editTx ?? undefined}
+          onClose={() => { setShowForm(false); setEditTx(null); }} />
       )}
     </div>
   );

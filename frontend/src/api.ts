@@ -18,6 +18,9 @@ export const getTransactions = (params: {
 export const addTransaction = (t: Omit<Transaction, 'id' | 'createdAt'>): Promise<Transaction> =>
   fetch(`${B}/transactions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(t) }).then(json);
 
+export const updateTransaction = (id: number, t: Omit<Transaction, 'id' | 'createdAt'>): Promise<Transaction> =>
+  fetch(`${B}/transactions/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(t) }).then(json);
+
 export const deleteTransaction = (id: number): Promise<void> =>
   fetch(`${B}/transactions/${id}`, { method: 'DELETE' }).then(() => {});
 

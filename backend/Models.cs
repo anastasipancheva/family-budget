@@ -58,7 +58,7 @@ public class AppSettings
     public string Person2Name { get; set; } = "Партнёр";
     public decimal Person1Salary { get; set; } = 75000;
     public decimal Person2Salary { get; set; } = 75000;
-    public decimal CompensationPerPerson { get; set; } = 1200;
+    public decimal CompensationPerPerson { get; set; } = 1050;
     public decimal RentAmount { get; set; } = 38000;
     public decimal UtilitiesBudget { get; set; } = 4000;
 }

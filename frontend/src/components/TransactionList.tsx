@@ -7,6 +7,7 @@ interface Props {
   transactions: Transaction[];
   settings: AppSettings;
   onDelete: (id: number) => void;
+  onEdit: (tx: Transaction) => void;
   onFilter: (params: { isIncome?: boolean; category?: string; person?: string; search?: string }) => void;
 }
 
@@ -16,7 +17,7 @@ function personName(person: string, s: AppSettings) {
   return '';
 }
 
-export default function TransactionList({ transactions, settings, onDelete, onFilter }: Props) {
+export default function TransactionList({ transactions, settings, onDelete, onEdit, onFilter }: Props) {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [filterCategory, setFilterCategory] = useState('');
@@ -143,8 +144,14 @@ export default function TransactionList({ transactions, settings, onDelete, onFi
                           {tx.isIncome ? '+' : '−'}{fmt(tx.amount)}
                         </span>
                         <button
+                          onClick={() => onEdit(tx)}
+                          className="opacity-0 group-hover:opacity-100 transition w-7 h-7 flex items-center justify-center rounded-xl text-t3 hover:text-y hover:bg-y/10"
+                          title="Редактировать">
+                          ✏️
+                        </button>
+                        <button
                           onClick={() => confirm('Удалить запись?') && onDelete(tx.id)}
-                          className="opacity-0 group-hover:opacity-100 transition ml-1 w-7 h-7 flex items-center justify-center rounded-xl text-t3 hover:text-[#FF453A] hover:bg-[#FF453A]/10"
+                          className="opacity-0 group-hover:opacity-100 transition w-7 h-7 flex items-center justify-center rounded-xl text-t3 hover:text-[#FF453A] hover:bg-[#FF453A]/10"
                           title="Удалить">
                           🗑️
                         </button>
