@@ -1,10 +1,9 @@
-# Stage 1: build React frontend
+# Stage 1: build Angular frontend
 FROM node:20-alpine AS frontend
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
+WORKDIR /app/frontend-ng
+COPY frontend-ng/package*.json ./
 RUN npm ci
-COPY frontend/ ./
-# Output goes to /app/backend/wwwroot (relative: ../backend/wwwroot)
+COPY frontend-ng/ ./
 RUN mkdir -p /app/backend/wwwroot && npm run build
 
 # Stage 2: build .NET backend
