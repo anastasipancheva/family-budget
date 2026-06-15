@@ -17,15 +17,9 @@ if (rawUrl.Contains("://"))
     var pass = Uri.UnescapeDataString(userParts.Length > 1 ? userParts[1] : "");
     var db   = uri.AbsolutePath.TrimStart('/').Split('?')[0];
     var dbPort = uri.IsDefaultPort ? 5432 : uri.Port;
-    var host   = uri.Host;
-    // Neon requires endpoint ID for SNI routing when using IP directly
-    // Extract from hostname: ep-shiny-cake-a2nawg3j-pooler.region... → ep-shiny-cake-a2nawg3j
-    var firstLabel  = host.Split('.')[0];
-    var endpointId  = firstLabel.EndsWith("-pooler")
-        ? firstLabel[..^"-pooler".Length]
-        : firstLabel;
-    var neonOptions = firstLabel.StartsWith("ep-") ? $";Options=-c endpoint_id={endpointId}" : "";
-    connStr = $"Host={host};Port={dbPort};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true;Timeout=30{neonOptions}";
+    // Use direct (unpooled) connection: remove -pooler suffix so SNI works natively
+    var host = uri.Host.Replace("-pooler.", ".");
+    connStr = $"Host={host};Port={dbPort};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true;Timeout=30";
 }
 else
 {
