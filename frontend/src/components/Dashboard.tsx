@@ -47,13 +47,13 @@ function StatCard({ label, value, sub, valueColor }: { label: string; value: num
 
 function CompWidget({ settings, onRefresh }: { settings: AppSettings; onRefresh: () => void }) {
   const today = new Date().toISOString().slice(0, 10);
-  const [persons, setPersons] = useState(2);
+  const [person, setPerson] = useState<'person1' | 'person2'>('person1');
   const [spent, setSpent] = useState('');
   const [date, setDate] = useState(today);
   const [result, setResult] = useState<{ compAmount: number; overAmount: number } | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const limit = settings.compensationPerPerson * persons;
+  const limit = settings.compensationPerPerson;
   const spentNum = +spent || 0;
   const preview = { comp: Math.min(spentNum, limit), over: Math.max(0, spentNum - limit) };
 
@@ -61,21 +61,26 @@ function CompWidget({ settings, onRefresh }: { settings: AppSettings; onRefresh:
     if (!spent || spentNum <= 0) return;
     setLoading(true);
     try {
-      const res = await api.smartCompensation({ date, spent: spentNum, persons });
+      const res = await api.smartCompensation({ date, spent: spentNum, persons: 1, person });
       setResult(res); setSpent(''); onRefresh();
       setTimeout(() => setResult(null), 4000);
     } finally { setLoading(false); }
   }
+
+  const personOptions = [
+    { value: 'person1' as const, label: settings.person1Name },
+    { value: 'person2' as const, label: settings.person2Name },
+  ];
 
   return (
     <div className="bg-card rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <p className="font-semibold text-t1 text-sm">🎫 Компенсация за обед</p>
         <div className="flex rounded-xl overflow-hidden border border-brd text-xs">
-          {[1, 2].map(n => (
-            <button key={n} onClick={() => setPersons(n)}
-              className={`px-3 py-1.5 font-semibold transition ${persons === n ? 'bg-y text-black' : 'text-t2 hover:text-t1'}`}>
-              {n === 1 ? '1 чел.' : '2 чел.'}
+          {personOptions.map(o => (
+            <button key={o.value} onClick={() => setPerson(o.value)}
+              className={`px-3 py-1.5 font-semibold transition ${person === o.value ? 'bg-y text-black' : 'text-t2 hover:text-t1'}`}>
+              {o.label}
             </button>
           ))}
         </div>
@@ -141,9 +146,9 @@ export default function Dashboard({ stats, settings, month, onRefresh }: Props) 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-card rounded-2xl p-4">
           <p className="font-semibold text-t1 text-sm mb-3">Расходы</p>
-          <div className="flex items-start gap-3">
+          <div className="flex flex-col items-center gap-3">
             <DonutChart data={expenseSegs} />
-            <div className="flex-1 space-y-1.5 min-w-0">
+            <div className="w-full space-y-1.5">
               {expenseSegs.map(s => (
                 <div key={s.label} className="flex justify-between items-center gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
@@ -153,16 +158,16 @@ export default function Dashboard({ stats, settings, month, onRefresh }: Props) 
                   <span className="text-xs font-semibold text-t1 flex-shrink-0">{fmt(s.value)}</span>
                 </div>
               ))}
-              {!expenseSegs.length && <p className="text-xs text-t3">Нет расходов</p>}
+              {!expenseSegs.length && <p className="text-xs text-t3 text-center">Нет расходов</p>}
             </div>
           </div>
         </div>
 
         <div className="bg-card rounded-2xl p-4">
           <p className="font-semibold text-t1 text-sm mb-3">Доходы</p>
-          <div className="flex items-start gap-3">
+          <div className="flex flex-col items-center gap-3">
             <DonutChart data={incomeSegs} />
-            <div className="flex-1 space-y-1.5 min-w-0">
+            <div className="w-full space-y-1.5">
               {incomeSegs.map(s => (
                 <div key={s.label} className="flex justify-between items-center gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
@@ -172,7 +177,7 @@ export default function Dashboard({ stats, settings, month, onRefresh }: Props) 
                   <span className="text-xs font-semibold text-t1 flex-shrink-0">{fmt(s.value)}</span>
                 </div>
               ))}
-              {!incomeSegs.length && <p className="text-xs text-t3">Нет доходов</p>}
+              {!incomeSegs.length && <p className="text-xs text-t3 text-center">Нет доходов</p>}
             </div>
           </div>
         </div>
