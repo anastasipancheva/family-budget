@@ -33,6 +33,11 @@ export const saveSettings = (s: AppSettings): Promise<AppSettings> =>
 export const addCompensation = (date: string): Promise<Transaction> =>
   fetch(`${B}/compensation/add`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date }) }).then(json);
 
+export const smartCompensation = (params: {
+  date: string; spent: number; persons: number; person?: string; description?: string;
+}): Promise<{ compAmount: number; overAmount: number }> =>
+  fetch(`${B}/compensation/smart`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) }).then(json);
+
 export const getSavings = (): Promise<SavingsAccount[]> =>
   fetch(`${B}/savings`).then(json);
 

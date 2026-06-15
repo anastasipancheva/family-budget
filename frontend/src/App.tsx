@@ -155,7 +155,7 @@ export default function App() {
 
       <main className="max-w-2xl mx-auto px-4 py-5 pb-28">
         {tab === 'dashboard' && stats && settings && (
-          <Dashboard stats={stats} settings={settings} month={month} onAddCompensation={handleAddCompensation} />
+          <Dashboard stats={stats} settings={settings} month={month} onRefresh={load} />
         )}
         {tab === 'transactions' && settings && (
           <TransactionList transactions={transactions} settings={settings} onDelete={handleDelete} onFilter={handleFilter} />

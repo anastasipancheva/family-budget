@@ -151,6 +151,52 @@ app.MapPost("/api/compensation/add", async (AppDbContext db, CompensationRequest
     return Results.Created($"/api/transactions/{t.Id}", t);
 });
 
+// ── Smart compensation: split spent amount into comp (up to limit) + personal expense ──
+
+app.MapPost("/api/compensation/smart", async (AppDbContext db, SmartCompRequest req) =>
+{
+    var settings = await db.Settings.FirstAsync();
+    var limit = settings.CompensationPerPerson * (req.Persons == 1 ? 1 : 2);
+    var compAmount    = Math.Min(req.Spent, limit);
+    var overAmount    = req.Spent - compAmount;
+    var created       = new List<Transaction>();
+
+    if (compAmount > 0)
+    {
+        var comp = new Transaction
+        {
+            Date        = req.Date,
+            Amount      = compAmount,
+            IsIncome    = true,
+            Category    = "Компенсация",
+            Description = req.Description ?? $"Компенсация за {req.Date:dd.MM}",
+            Person      = req.Persons == 1 ? req.Person ?? "shared" : "shared",
+            CreatedAt   = DateTime.UtcNow,
+        };
+        db.Transactions.Add(comp);
+        created.Add(comp);
+    }
+
+    if (overAmount > 0)
+    {
+        var expense = new Transaction
+        {
+            Date        = req.Date,
+            Amount      = overAmount,
+            IsIncome    = false,
+            Category    = "Продукты",
+            Description = $"Сверх компенсации ({req.Date:dd.MM})",
+            Person      = req.Persons == 1 ? req.Person ?? "shared" : "shared",
+            CreatedAt   = DateTime.UtcNow,
+        };
+        db.Transactions.Add(expense);
+        created.Add(expense);
+    }
+
+    await db.SaveChangesAsync();
+    return Results.Ok(new { compAmount, overAmount, created });
+});
+
 // ── Savings Accounts ──────────────────────────────────────────────────────────
 
 app.MapGet("/api/savings", async (AppDbContext db) =>
@@ -295,5 +341,6 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 app.Run($"http://0.0.0.0:{port}");
 
 record CompensationRequest(DateOnly Date);
+record SmartCompRequest(DateOnly Date, decimal Spent, int Persons, string? Person, string? Description);
 record BudgetUpsertRequest(string Month, string Category, decimal Amount);
 record ShoppingItemUpdate(bool IsBought, decimal? ActualCost, string? Name, decimal? EstimatedCost);
