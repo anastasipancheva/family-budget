@@ -42,7 +42,6 @@ export default function TransactionList({ transactions, settings, onDelete, onFi
 
   const allCategories = filterType === 'income' ? INCOME_CATEGORIES : filterType === 'expense' ? EXPENSE_CATEGORIES : [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
 
-  // Group by date
   const byDate = new Map<string, Transaction[]>();
   for (const t of transactions) {
     const arr = byDate.get(t.date) ?? [];
@@ -58,21 +57,28 @@ export default function TransactionList({ transactions, settings, onDelete, onFi
     { value: 'shared', label: 'Общее' },
   ];
 
+  const hasFilters = !!(filterCategory || filterPerson || search);
+
   return (
     <div className="space-y-4">
       {/* Search */}
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-t3 text-sm">🔍</span>
         <input type="search" value={search} onChange={e => doSearch(e.target.value)}
           placeholder="Поиск по описанию или категории…"
-          className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white" />
+          className="w-full bg-card border border-brd rounded-2xl pl-9 pr-4 py-2.5 text-sm text-t1 placeholder-t3 focus:outline-none focus:border-y/60" />
       </div>
 
       {/* Type tabs */}
-      <div className="flex rounded-xl overflow-hidden border border-gray-200 bg-white">
+      <div className="flex rounded-2xl overflow-hidden bg-card2 p-1 gap-1">
         {(['all', 'income', 'expense'] as const).map(t => (
           <button key={t} onClick={() => setType(t)}
-            className={`flex-1 py-2 text-sm font-medium transition ${filterType === t ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}`}>
+            className={`flex-1 py-2 text-sm font-semibold rounded-xl transition
+              ${filterType === t
+                ? t === 'income' ? 'bg-green-500 text-white'
+                : t === 'expense' ? 'bg-[#FF453A] text-white'
+                : 'bg-y text-black'
+                : 'text-t2 hover:text-t1'}`}>
             {t === 'all' ? 'Все' : t === 'income' ? '+ Доходы' : '− Расходы'}
           </button>
         ))}
@@ -81,32 +87,30 @@ export default function TransactionList({ transactions, settings, onDelete, onFi
       {/* Filters row */}
       <div className="flex gap-2 overflow-x-auto pb-1">
         <select value={filterCategory} onChange={e => setCat(e.target.value)}
-          className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 flex-shrink-0">
+          className="bg-card border border-brd rounded-xl px-3 py-2 text-sm text-t1 focus:outline-none flex-shrink-0">
           <option value="">Все категории</option>
           {allCategories.map(c => <option key={c} value={c}>{CATEGORY_ICONS[c]} {c}</option>)}
         </select>
         <select value={filterPerson} onChange={e => setPerson(e.target.value)}
-          className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 flex-shrink-0">
+          className="bg-card border border-brd rounded-xl px-3 py-2 text-sm text-t1 focus:outline-none flex-shrink-0">
           {personOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
-        {(filterCategory || filterPerson || search) && (
+        {hasFilters && (
           <button onClick={() => { setFilterCategory(''); setFilterPerson(''); setSearch(''); apply({ category: '', person: '', search: '' }); }}
-            className="border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 bg-white flex-shrink-0 whitespace-nowrap">
+            className="bg-card border border-brd rounded-xl px-3 py-2 text-sm text-t2 hover:text-t1 flex-shrink-0 whitespace-nowrap transition">
             Сбросить ×
           </button>
         )}
       </div>
 
-      {/* Count */}
       {transactions.length > 0 && (
-        <p className="text-xs text-gray-400">Найдено: {transactions.length} записей</p>
+        <p className="text-xs text-t3">Найдено: {transactions.length} записей</p>
       )}
 
-      {/* List */}
       {transactions.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
+        <div className="text-center py-16 text-t3">
           <p className="text-4xl mb-3">📭</p>
-          <p>Нет записей по выбранным фильтрам</p>
+          <p className="text-sm">Нет записей по выбранным фильтрам</p>
         </div>
       ) : (
         <div className="space-y-5">
@@ -117,21 +121,21 @@ export default function TransactionList({ transactions, settings, onDelete, onFi
             return (
               <div key={date}>
                 <div className="flex justify-between items-center mb-2">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide font-medium capitalize">{label}</p>
-                  <span className={`text-xs font-semibold ${dayTotal >= 0 ? 'text-green-500' : 'text-red-400'}`}>
+                  <p className="text-xs text-t3 uppercase tracking-wide font-medium capitalize">{label}</p>
+                  <span className={`text-xs font-semibold ${dayTotal >= 0 ? 'text-green-400' : 'text-[#FF453A]'}`}>
                     {dayTotal >= 0 ? '+' : ''}{fmt(dayTotal)}
                   </span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {items.map(tx => {
                     const color = CATEGORY_COLORS[tx.category] ?? (tx.isIncome ? '#22c55e' : '#94a3b8');
                     const name = personName(tx.person, settings);
                     return (
-                      <div key={tx.id} className="bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100 flex items-center gap-3 group">
+                      <div key={tx.id} className="bg-card rounded-2xl px-4 py-3 flex items-center gap-3 group border border-brd hover:border-brd/80 transition">
                         <span className="text-xl w-8 text-center flex-shrink-0">{CATEGORY_ICONS[tx.category] ?? (tx.isIncome ? '💰' : '📦')}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{tx.description || tx.category}</p>
-                          <p className="text-xs text-gray-400">
+                          <p className="font-medium text-sm text-t1 truncate">{tx.description || tx.category}</p>
+                          <p className="text-xs text-t3">
                             {tx.category}{name ? ` · ${name}` : ''}
                           </p>
                         </div>
@@ -140,7 +144,7 @@ export default function TransactionList({ transactions, settings, onDelete, onFi
                         </span>
                         <button
                           onClick={() => confirm('Удалить запись?') && onDelete(tx.id)}
-                          className="opacity-0 group-hover:opacity-100 transition ml-1 w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50"
+                          className="opacity-0 group-hover:opacity-100 transition ml-1 w-7 h-7 flex items-center justify-center rounded-xl text-t3 hover:text-[#FF453A] hover:bg-[#FF453A]/10"
                           title="Удалить">
                           🗑️
                         </button>

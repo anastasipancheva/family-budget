@@ -3,21 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Семейный бюджет</title>
+    <title>Бюджет</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              accent: '#6366f1',
+              y:    '#FFDD2D',
+              bg:   '#0F0F0F',
+              card: '#1A1A1A',
+              card2:'#252525',
+              brd:  '#2E2E2E',
+              t1:   '#FFFFFF',
+              t2:   '#999999',
+              t3:   '#555555',
             }
           }
         }
       }
     </script>
+    <style>
+      * { -webkit-tap-highlight-color: transparent; }
+      body { background: #0F0F0F; color: #fff; }
+      input[type=number]::-webkit-inner-spin-button { opacity: 0.3; }
+      ::-webkit-scrollbar { width: 4px; height: 4px; }
+      ::-webkit-scrollbar-track { background: #1A1A1A; }
+      ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    </style>
   </head>
-  <body class="bg-gray-50 text-gray-900">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

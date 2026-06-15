@@ -16,12 +16,19 @@ const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','
 function toMonthStr(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
-
 function getWeekStart(date: Date): string {
   const d = new Date(date);
   const day = d.getDay();
   d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
   return d.toISOString().slice(0, 10);
+}
+
+function TLogo() {
+  return (
+    <div className="w-8 h-8 rounded-full bg-y flex items-center justify-center flex-shrink-0">
+      <span className="font-black text-black text-base leading-none">T</span>
+    </div>
+  );
 }
 
 export default function App() {
@@ -58,20 +65,15 @@ export default function App() {
       if (!settings) setSettings(set);
       await loadTransactions();
     } catch {
-      setError('Не удалось подключиться к серверу. Убедитесь, что бэкенд запущен.');
+      setError('Не удалось подключиться к серверу.');
     } finally { setLoading(false); }
   }, [month, weekStart]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { setLoading(true); load(); }, [month]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function loadShopping(ws: string) {
-    const shop = await api.getShoppingItems(ws);
-    setShoppingItems(shop);
-  }
-
   async function handleWeekChange(ws: string) {
     setWeekStart(ws);
-    await loadShopping(ws);
+    setShoppingItems(await api.getShoppingItems(ws));
   }
 
   function stepMonth(dir: number) {
@@ -80,25 +82,14 @@ export default function App() {
   }
 
   async function handleAdd(tx: Omit<Transaction, 'id' | 'createdAt'>) {
-    await api.addTransaction(tx);
-    await load();
+    await api.addTransaction(tx); await load();
   }
-
   async function handleDelete(id: number) {
-    await api.deleteTransaction(id);
-    await load();
+    await api.deleteTransaction(id); await load();
   }
-
   async function handleSaveSettings(s: AppSettings) {
-    const saved = await api.saveSettings(s);
-    setSettings(saved);
+    setSettings(await api.saveSettings(s));
   }
-
-  async function handleAddCompensation() {
-    await api.addCompensation(new Date().toISOString().slice(0, 10));
-    await load();
-  }
-
   async function handleFilter(filter: Parameters<typeof api.getTransactions>[0]) {
     setTxFilter(filter);
     await loadTransactions(filter);
@@ -106,53 +97,60 @@ export default function App() {
 
   const [y, m] = month.split('-').map(Number);
   const monthLabel = `${MONTH_NAMES[m - 1]} ${y}`;
-
-  const TABS: { key: Tab; icon: string; label: string }[] = [
-    { key: 'dashboard',    icon: '📊', label: 'Обзор' },
-    { key: 'transactions', icon: '📋', label: 'Записи' },
-    { key: 'savings',      icon: '🏦', label: 'Счета' },
-    { key: 'planning',     icon: '🎯', label: 'Планирование' },
-    { key: 'settings',     icon: '⚙️', label: 'Настройки' },
-  ];
-
   const showMonthNav = tab === 'dashboard' || tab === 'transactions' || tab === 'planning';
+
+  const TABS: { key: Tab; label: string; icon: string }[] = [
+    { key: 'dashboard',    icon: '◈',  label: 'Обзор' },
+    { key: 'transactions', icon: '≡',  label: 'Записи' },
+    { key: 'savings',      icon: '◎',  label: 'Счета' },
+    { key: 'planning',     icon: '⊞',  label: 'План' },
+    { key: 'settings',     icon: '⚙',  label: 'Ещё' },
+  ];
 
   if (loading && !stats) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-400 flex-col gap-3">
-        <div className="text-4xl animate-pulse">💰</div><p>Загрузка...</p>
+      <div className="min-h-screen bg-bg flex items-center justify-center flex-col gap-4">
+        <div className="w-14 h-14 rounded-full bg-y flex items-center justify-center animate-pulse">
+          <span className="font-black text-black text-2xl">T</span>
+        </div>
+        <p className="text-t2 text-sm">Загрузка...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center max-w-sm">
-          <p className="text-4xl mb-4">⚠️</p>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button onClick={load} className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-indigo-700 transition">Повторить</button>
+      <div className="min-h-screen bg-bg flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="w-14 h-14 rounded-full bg-card2 flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">⚠</span>
+          </div>
+          <p className="text-t2 mb-4 text-sm">{error}</p>
+          <button onClick={load} className="bg-y text-black font-bold px-6 py-2.5 rounded-2xl">Повторить</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <h1 className="font-bold text-base text-gray-800 flex-shrink-0">💰 Бюджет</h1>
+    <div className="min-h-screen bg-bg">
+      {/* Header */}
+      <header className="bg-bg border-b border-brd sticky top-0 z-40">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+          <TLogo />
+          <span className="font-bold text-t1 flex-shrink-0">Бюджет</span>
           {showMonthNav && (
-            <div className="flex items-center gap-1">
-              <button onClick={() => stepMonth(-1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition text-gray-500 text-lg">‹</button>
-              <span className="text-sm font-semibold w-36 text-center">{monthLabel}</span>
-              <button onClick={() => stepMonth(1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition text-gray-500 text-lg">›</button>
+            <div className="flex items-center gap-1 ml-auto">
+              <button onClick={() => stepMonth(-1)} className="w-8 h-8 flex items-center justify-center rounded-xl text-t2 hover:text-t1 hover:bg-card transition text-lg">‹</button>
+              <span className="text-sm font-semibold text-t1 w-36 text-center">{monthLabel}</span>
+              <button onClick={() => stepMonth(1)} className="w-8 h-8 flex items-center justify-center rounded-xl text-t2 hover:text-t1 hover:bg-card transition text-lg">›</button>
             </div>
           )}
-          {!showMonthNav && <div className="flex-1" />}
+          {!showMonthNav && <div className="ml-auto" />}
         </div>
       </header>
 
+      {/* Content */}
       <main className="max-w-2xl mx-auto px-4 py-5 pb-28">
         {tab === 'dashboard' && stats && settings && (
           <Dashboard stats={stats} settings={settings} month={month} onRefresh={load} />
@@ -164,32 +162,31 @@ export default function App() {
           <SavingsPage accounts={savings} onRefresh={load} />
         )}
         {tab === 'planning' && stats && (
-          <PlanningPage
-            budgets={budgets} stats={stats} month={month}
+          <PlanningPage budgets={budgets} stats={stats} month={month}
             shoppingItems={shoppingItems} weekStart={weekStart}
-            onWeekChange={handleWeekChange} onRefresh={load}
-          />
+            onWeekChange={handleWeekChange} onRefresh={load} />
         )}
         {tab === 'settings' && settings && (
           <SettingsPage settings={settings} onSave={handleSaveSettings} />
         )}
       </main>
 
+      {/* FAB */}
       {tab !== 'settings' && tab !== 'savings' && (
         <button onClick={() => setShowForm(true)}
-          className="fixed right-5 bottom-20 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center text-3xl hover:bg-indigo-700 active:scale-95 transition z-30 leading-none">
+          className="fixed right-5 bottom-20 w-14 h-14 bg-y text-black rounded-full shadow-lg flex items-center justify-center text-3xl font-bold hover:brightness-110 active:scale-95 transition z-30 leading-none">
           +
         </button>
       )}
 
-      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 z-40">
+      {/* Bottom nav */}
+      <nav className="fixed bottom-0 inset-x-0 bg-card border-t border-brd z-40">
         <div className="max-w-2xl mx-auto flex">
           {TABS.map(({ key, icon, label }) => (
             <button key={key} onClick={() => setTab(key)}
-              className={`flex-1 py-2.5 flex flex-col items-center gap-0.5 text-xs font-medium transition
-                ${tab === key ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
-              <span className="text-lg leading-none">{icon}</span>
-              <span className="leading-none">{label}</span>
+              className={`flex-1 py-3 flex flex-col items-center gap-0.5 transition ${tab === key ? 'text-y' : 'text-t3 hover:text-t2'}`}>
+              <span className="text-xl leading-none">{icon}</span>
+              <span className="text-[10px] font-medium leading-none">{label}</span>
             </button>
           ))}
         </div>

@@ -2,14 +2,8 @@ import { useState } from 'react';
 import type { AppSettings } from '../types';
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, CATEGORY_ICONS } from '../types';
 
-interface NewTx {
-  date: string; amount: number; isIncome: boolean; category: string; description: string; person: string;
-}
-interface Props {
-  settings: AppSettings;
-  onAdd: (tx: NewTx) => Promise<void>;
-  onClose: () => void;
-}
+interface NewTx { date: string; amount: number; isIncome: boolean; category: string; description: string; person: string; }
+interface Props { settings: AppSettings; onAdd: (tx: NewTx) => Promise<void>; onClose: () => void; }
 
 export default function TransactionForm({ settings, onAdd, onClose }: Props) {
   const today = new Date().toISOString().slice(0, 10);
@@ -32,10 +26,8 @@ export default function TransactionForm({ settings, onAdd, onClose }: Props) {
     e.preventDefault();
     if (!amount || +amount <= 0) return;
     setLoading(true);
-    try {
-      await onAdd({ date, amount: +amount, isIncome, category, description, person });
-      onClose();
-    } finally { setLoading(false); }
+    try { await onAdd({ date, amount: +amount, isIncome, category, description, person }); onClose(); }
+    finally { setLoading(false); }
   }
 
   const personOptions = [
@@ -45,45 +37,51 @@ export default function TransactionForm({ settings, onAdd, onClose }: Props) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={onClose}>
-      <div className="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-xl max-h-[90vh] overflow-y-auto"
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl max-h-[92vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold">Новая запись</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none w-8 h-8 flex items-center justify-center">×</button>
+        {/* Handle */}
+        <div className="w-10 h-1 bg-brd rounded-full mx-auto mb-4 sm:hidden" />
+
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-lg font-bold text-t1">Новая запись</h2>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full bg-card2 text-t2 hover:text-t1 transition text-xl leading-none">×</button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Income / Expense toggle */}
-          <div className="flex rounded-xl overflow-hidden border border-gray-200">
+          {/* Toggle */}
+          <div className="flex rounded-2xl overflow-hidden bg-card2 p-1 gap-1">
             <button type="button" onClick={() => toggleType(false)}
-              className={`flex-1 py-2.5 text-sm font-semibold transition ${!isIncome ? 'bg-red-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}>
+              className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition ${!isIncome ? 'bg-[#FF453A] text-white' : 'text-t2 hover:text-t1'}`}>
               − Расход
             </button>
             <button type="button" onClick={() => toggleType(true)}
-              className={`flex-1 py-2.5 text-sm font-semibold transition ${isIncome ? 'bg-green-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}>
+              className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition ${isIncome ? 'bg-green-500 text-white' : 'text-t2 hover:text-t1'}`}>
               + Доход
             </button>
           </div>
 
           {/* Amount */}
           <div>
-            <label className="text-xs text-gray-400 uppercase tracking-wide font-medium">Сумма, ₽</label>
-            <input type="number" min="0.01" step="any" value={amount} onChange={e => setAmount(e.target.value)}
-              placeholder="0" required autoFocus
-              className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-2xl font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+            <p className="text-xs text-t2 uppercase tracking-wide font-medium mb-1">Сумма</p>
+            <div className="relative">
+              <input type="number" min="0.01" step="any" value={amount} onChange={e => setAmount(e.target.value)}
+                placeholder="0" required autoFocus
+                className="w-full bg-card2 border border-brd rounded-2xl px-4 py-3 text-3xl font-bold text-t1 placeholder-t3 focus:outline-none focus:border-y/60 pr-10" />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-t3 text-lg">₽</span>
+            </div>
           </div>
 
           {/* Category */}
           <div>
-            <label className="text-xs text-gray-400 uppercase tracking-wide font-medium">Категория</label>
-            <div className="grid grid-cols-3 gap-2 mt-1 max-h-52 overflow-y-auto pr-1">
+            <p className="text-xs text-t2 uppercase tracking-wide font-medium mb-2">Категория</p>
+            <div className="grid grid-cols-4 gap-1.5 max-h-48 overflow-y-auto pr-1">
               {categories.map(c => (
                 <button key={c} type="button" onClick={() => setCategory(c)}
-                  className={`flex flex-col items-center py-2 px-1 rounded-xl border text-xs font-medium transition
-                    ${category === c ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}>
-                  <span className="text-lg">{CATEGORY_ICONS[c] ?? '•'}</span>
-                  <span className="mt-0.5 text-center leading-tight">{c}</span>
+                  className={`flex flex-col items-center py-2.5 px-1 rounded-2xl text-xs font-medium transition
+                    ${category === c ? 'bg-y text-black' : 'bg-card2 text-t2 hover:text-t1'}`}>
+                  <span className="text-lg mb-0.5">{CATEGORY_ICONS[c] ?? '•'}</span>
+                  <span className="text-center leading-tight">{c}</span>
                 </button>
               ))}
             </div>
@@ -92,14 +90,14 @@ export default function TransactionForm({ settings, onAdd, onClose }: Props) {
           {/* Date + Person */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide font-medium">Дата</label>
+              <p className="text-xs text-t2 uppercase tracking-wide font-medium mb-1">Дата</p>
               <input type="date" value={date} onChange={e => setDate(e.target.value)} required
-                className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                className="w-full bg-card2 border border-brd rounded-2xl px-3 py-2.5 text-t1 text-sm focus:outline-none focus:border-y/60" />
             </div>
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide font-medium">Кто</label>
+              <p className="text-xs text-t2 uppercase tracking-wide font-medium mb-1">Кто</p>
               <select value={person} onChange={e => setPerson(e.target.value)}
-                className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                className="w-full bg-card2 border border-brd rounded-2xl px-3 py-2.5 text-t1 text-sm focus:outline-none focus:border-y/60">
                 {personOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
@@ -107,15 +105,15 @@ export default function TransactionForm({ settings, onAdd, onClose }: Props) {
 
           {/* Description */}
           <div>
-            <label className="text-xs text-gray-400 uppercase tracking-wide font-medium">Описание (опционально)</label>
+            <p className="text-xs text-t2 uppercase tracking-wide font-medium mb-1">Описание (опционально)</p>
             <input type="text" value={description} onChange={e => setDescription(e.target.value)}
-              placeholder="Например: Пятёрочка, обед…"
-              className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+              placeholder="Пятёрочка, обед…"
+              className="w-full bg-card2 border border-brd rounded-2xl px-4 py-2.5 text-t1 text-sm placeholder-t3 focus:outline-none focus:border-y/60" />
           </div>
 
           <button type="submit" disabled={loading}
-            className={`w-full font-semibold py-3 rounded-xl transition disabled:opacity-50 text-white
-              ${isIncome ? 'bg-green-600 hover:bg-green-700' : 'bg-red-500 hover:bg-red-600'}`}>
+            className={`w-full font-bold py-3.5 rounded-2xl transition disabled:opacity-50 text-base
+              ${isIncome ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-y text-black hover:brightness-110'}`}>
             {loading ? 'Сохраняем...' : `Добавить ${isIncome ? 'доход' : 'расход'}`}
           </button>
         </form>
