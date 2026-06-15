@@ -2,8 +2,16 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connStr = Environment.GetEnvironmentVariable("DATABASE_URL")
+var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
     ?? throw new Exception("DATABASE_URL environment variable is not set");
+
+// Normalize URL: ensure correct scheme and remove params Npgsql doesn't support
+var connStr = rawUrl
+    .Replace("ostgresql://", "postgresql://")  // Render sometimes strips the 'p'
+    .Replace("postgres://", "postgresql://")
+    .Replace("&channel_binding=require", "")
+    .Replace("?channel_binding=require&", "?")
+    .Replace("?channel_binding=require", "");
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseNpgsql(connStr));
