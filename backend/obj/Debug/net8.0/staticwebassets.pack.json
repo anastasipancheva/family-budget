@@ -1,0 +1,29 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\User\\Desktop\\family-budget\\backend\\wwwroot\\assets\\index-BNPZ6epQ.js",
+      "PackagePath": "staticwebassets\\assets\\index-BNPZ6epQ.js"
+    },
+    {
+      "Id": "C:\\Users\\User\\Desktop\\family-budget\\backend\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.BudgetApi.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.BudgetApi.props",
+      "PackagePath": "build\\BudgetApi.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.BudgetApi.props",
+      "PackagePath": "buildMultiTargeting\\BudgetApi.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.BudgetApi.props",
+      "PackagePath": "buildTransitive\\BudgetApi.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

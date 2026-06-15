@@ -1,0 +1,58 @@
+{
+  "Version": 1,
+  "Hash": "01YYqcEKWAX8EI0VWNe2GwPLwoE9Zs11cZDMDdS7Tvc=",
+  "Source": "BudgetApi",
+  "BasePath": "_content/BudgetApi",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "BudgetApi\\wwwroot",
+      "Source": "BudgetApi",
+      "ContentRoot": "C:\\Users\\User\\Desktop\\family-budget\\backend\\wwwroot\\",
+      "BasePath": "_content/BudgetApi",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\User\\Desktop\\family-budget\\backend\\wwwroot\\assets\\index-BNPZ6epQ.js",
+      "SourceId": "BudgetApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\User\\Desktop\\family-budget\\backend\\wwwroot\\",
+      "BasePath": "_content/BudgetApi",
+      "RelativePath": "assets/index-BNPZ6epQ.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\index-BNPZ6epQ.js"
+    },
+    {
+      "Identity": "C:\\Users\\User\\Desktop\\family-budget\\backend\\wwwroot\\index.html",
+      "SourceId": "BudgetApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\User\\Desktop\\family-budget\\backend\\wwwroot\\",
+      "BasePath": "_content/BudgetApi",
+      "RelativePath": "index.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\index.html"
+    }
+  ]
+}

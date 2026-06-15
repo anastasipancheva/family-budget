@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/api.ts","./src/main.tsx","./src/types.ts","./src/components/budgetpage.tsx","./src/components/dashboard.tsx","./src/components/groceryplan.tsx","./src/components/planningpage.tsx","./src/components/savingspage.tsx","./src/components/settingspage.tsx","./src/components/transactionform.tsx","./src/components/transactionlist.tsx"],"version":"5.9.3"}
