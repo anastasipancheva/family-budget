@@ -43,6 +43,7 @@ export default function App() {
   const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editTx, setEditTx] = useState<Transaction | null>(null);
+  const [compResult, setCompResult] = useState<{ compAmount: number; overAmount: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [txFilter, setTxFilter] = useState<Parameters<typeof api.getTransactions>[0]>({});
@@ -82,10 +83,36 @@ export default function App() {
     setMonth(toMonthStr(new Date(y, m - 1 + dir, 1)));
   }
 
+  function isCompensationEligible(tx: Omit<Transaction, 'id' | 'createdAt'>): boolean {
+    if (tx.isIncome) return false;
+    if (!['Продукты', 'Кафе и рестораны'].includes(tx.category)) return false;
+    if (tx.person === 'shared') return false;
+    const txDate = new Date(tx.date + 'T12:00:00');
+    const dow = txDate.getDay(); // 0=вс, 1=пн..5=пт, 6=сб
+    if (dow === 0 || dow === 6) return false;
+    // время проверяем только если дата == сегодня
+    const today = new Date().toISOString().slice(0, 10);
+    if (tx.date === today) {
+      const hour = new Date().getHours();
+      if (hour < 6 || hour >= 23) return false;
+    }
+    return true;
+  }
+
   async function handleAdd(tx: Omit<Transaction, 'id' | 'createdAt'>) {
     if (editTx) {
       await api.updateTransaction(editTx.id, tx);
       setEditTx(null);
+    } else if (isCompensationEligible(tx)) {
+      const res = await api.smartCompensation({
+        date: tx.date, spent: tx.amount, persons: 1,
+        person: tx.person, description: tx.description || undefined,
+        category: tx.category,
+      });
+      if (res.compAmount > 0 || res.overAmount > 0) {
+        setCompResult({ compAmount: res.compAmount, overAmount: res.overAmount });
+        setTimeout(() => setCompResult(null), 5000);
+      }
     } else {
       await api.addTransaction(tx);
     }
@@ -202,6 +229,20 @@ export default function App() {
       {showForm && settings && (
         <TransactionForm settings={settings} onAdd={handleAdd} initial={editTx ?? undefined}
           onClose={() => { setShowForm(false); setEditTx(null); }} />
+      )}
+
+      {compResult && (
+        <div className="fixed top-5 inset-x-0 flex justify-center z-50 px-4 pointer-events-none">
+          <div className="bg-card border border-brd rounded-2xl px-4 py-3 shadow-2xl flex flex-col gap-1.5 min-w-64">
+            <p className="text-xs text-t2 font-medium">🎫 Компенсация применена</p>
+            {compResult.compAmount > 0 && (
+              <p className="text-sm text-green-400 font-semibold">+{new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(compResult.compAmount)} компенсация</p>
+            )}
+            {compResult.overAmount > 0 && (
+              <p className="text-sm text-orange-400 font-semibold">−{new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(compResult.overAmount)} личные траты</p>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

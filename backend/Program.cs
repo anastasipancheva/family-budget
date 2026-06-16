@@ -170,10 +170,21 @@ app.MapPost("/api/compensation/add", async (AppDbContext db, CompensationRequest
 app.MapPost("/api/compensation/smart", async (AppDbContext db, SmartCompRequest req) =>
 {
     var settings = await db.Settings.FirstAsync();
-    var limit = settings.CompensationPerPerson * (req.Persons == 1 ? 1 : 2);
-    var compAmount    = Math.Min(req.Spent, limit);
-    var overAmount    = req.Spent - compAmount;
-    var created       = new List<Transaction>();
+    var limitPerPerson = settings.CompensationPerPerson;
+
+    // How much compensation was already added today for this person
+    var alreadyUsed = await db.Transactions
+        .Where(t => t.IsIncome && t.Category == "Компенсация"
+            && t.Date == req.Date
+            && t.Person == (req.Person ?? "shared"))
+        .SumAsync(t => t.Amount);
+
+    var remaining  = Math.Max(0, limitPerPerson - alreadyUsed);
+    var compAmount = Math.Min(req.Spent, remaining);
+    var overAmount = req.Spent - compAmount;
+    var person     = req.Person ?? "shared";
+    var category   = req.Category ?? "Продукты";
+    var created    = new List<Transaction>();
 
     if (compAmount > 0)
     {
@@ -184,7 +195,7 @@ app.MapPost("/api/compensation/smart", async (AppDbContext db, SmartCompRequest 
             IsIncome    = true,
             Category    = "Компенсация",
             Description = req.Description ?? $"Компенсация за {req.Date:dd.MM}",
-            Person      = req.Persons == 1 ? req.Person ?? "shared" : "shared",
+            Person      = person,
             CreatedAt   = DateTime.UtcNow,
         };
         db.Transactions.Add(comp);
@@ -198,9 +209,9 @@ app.MapPost("/api/compensation/smart", async (AppDbContext db, SmartCompRequest 
             Date        = req.Date,
             Amount      = overAmount,
             IsIncome    = false,
-            Category    = "Продукты",
-            Description = $"Сверх компенсации ({req.Date:dd.MM})",
-            Person      = req.Persons == 1 ? req.Person ?? "shared" : "shared",
+            Category    = category,
+            Description = req.Description != null ? $"{req.Description} (сверх лимита)" : $"Сверх компенсации ({req.Date:dd.MM})",
+            Person      = person,
             CreatedAt   = DateTime.UtcNow,
         };
         db.Transactions.Add(expense);
@@ -208,7 +219,7 @@ app.MapPost("/api/compensation/smart", async (AppDbContext db, SmartCompRequest 
     }
 
     await db.SaveChangesAsync();
-    return Results.Ok(new { compAmount, overAmount, created });
+    return Results.Ok(new { compAmount, overAmount, remaining, alreadyUsed, created });
 });
 
 // ── Savings Accounts ──────────────────────────────────────────────────────────
@@ -355,6 +366,6 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 app.Run($"http://0.0.0.0:{port}");
 
 record CompensationRequest(DateOnly Date);
-record SmartCompRequest(DateOnly Date, decimal Spent, int Persons, string? Person, string? Description);
+record SmartCompRequest(DateOnly Date, decimal Spent, int Persons, string? Person, string? Description, string? Category);
 record BudgetUpsertRequest(string Month, string Category, decimal Amount);
 record ShoppingItemUpdate(bool IsBought, decimal? ActualCost, string? Name, decimal? EstimatedCost);

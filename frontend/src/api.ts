@@ -37,8 +37,8 @@ export const addCompensation = (date: string): Promise<Transaction> =>
   fetch(`${B}/compensation/add`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date }) }).then(json);
 
 export const smartCompensation = (params: {
-  date: string; spent: number; persons: number; person?: string; description?: string;
-}): Promise<{ compAmount: number; overAmount: number }> =>
+  date: string; spent: number; persons: number; person?: string; description?: string; category?: string;
+}): Promise<{ compAmount: number; overAmount: number; remaining: number; alreadyUsed: number }> =>
   fetch(`${B}/compensation/smart`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) }).then(json);
 
 export const getSavings = (): Promise<SavingsAccount[]> =>
